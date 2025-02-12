@@ -1,0 +1,159 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+using namespace std;
+class Book {
+public:
+    string bookID, title, author, publisher;
+    bool isIssued;
+    Book(string id, string t, string a, string p, bool issued = false)
+        : bookID(id), title(t), author(a), publisher(p), isIssued(issued) {}
+
+    void display() {
+        cout << "Book ID: " << bookID << "\nTitle: " << title
+             << "\nAuthor: " << author << "\nPublisher: " << publisher
+             << "\nStatus: " << (isIssued ? "Issued" : "Available") << "\n\n";
+    }
+};
+class Library {
+private:
+    vector<Book> books;
+
+public:
+    Library() {
+        loadBooksFromFile();
+    }
+
+    ~Library() {
+        saveBooksToFile();
+    }
+
+    void addBook() {
+        string id, title, author, publisher;
+        cout << "Enter Book ID: ";
+        cin >> id;
+        cin.ignore();
+        cout << "Enter Title: ";
+        getline(cin, title);
+        cout << "Enter Author: ";
+        getline(cin, author);
+        cout << "Enter Publisher: ";
+        getline(cin, publisher);
+
+        books.emplace_back(id, title, author, publisher);
+        cout << "Book added successfully!\n";
+    }
+
+    void displayBooks() {
+        if (books.empty()) {
+            cout << "No books available in the library.\n";
+            return;
+        }
+        for (auto &book : books) {
+            book.display();
+        }
+    }
+
+    void searchBook() {
+        string id;
+        cout << "Enter Book ID to search: ";
+        cin >> id;
+
+        for (auto &book : books) {
+            if (book.bookID == id) {
+                book.display();
+                return;
+            }
+        }
+        cout << "Book not found!\n";
+    }
+
+    void issueBook() {
+        string id;
+        cout << "Enter Book ID to issue: ";
+        cin >> id;
+
+        for (auto &book : books) {
+            if (book.bookID == id) {
+                if (book.isIssued) {
+                    cout << "Book is already issued!\n";
+                } else {
+                    book.isIssued = true;
+                    cout << "Book issued successfully!\n";
+                }
+                return;
+            }
+        }
+        cout << "Book not found!\n";
+    }
+
+    void returnBook() {
+        string id;
+        cout << "Enter Book ID to return: ";
+        cin >> id;
+
+        for (auto &book : books) {
+            if (book.bookID == id) {
+                if (!book.isIssued) {
+                    cout << "Book is not issued!\n";
+                } else {
+                    book.isIssued = false;
+                    cout << "Book returned successfully!\n";
+                }
+                return;
+            }
+        }
+        cout << "Book not found!\n";
+    }
+
+    void loadBooksFromFile() {
+        ifstream file("library_data.txt");
+        if (!file) return;
+
+        string id, title, author, publisher;
+        bool issued;
+        while (file >> id >> issued) {
+            file.ignore();
+            getline(file, title);
+            getline(file, author);
+            getline(file, publisher);
+            books.emplace_back(id, title, author, publisher, issued);
+        }
+        file.close();
+    }
+
+    void saveBooksToFile() {
+        ofstream file("library_data.txt");
+        for (auto &book : books) {
+            file << book.bookID << " " << book.isIssued << "\n"
+                 << book.title << "\n"
+                 << book.author << "\n"
+                 << book.publisher << "\n";
+        }
+        file.close();
+    }
+};
+
+int main() {
+    Library library;
+    int choice;
+
+    while (true) {
+        cout << "\nLibrary Management System\n";
+        cout << "1. Add Book\n2. Display Books\n3. Search Book\n4. Issue Book\n5. Return Book\n6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: library.addBook(); break;
+            case 2: library.displayBooks(); break;
+            case 3: library.searchBook(); break;
+            case 4: library.issueBook(); break;
+            case 5: library.returnBook(); break;
+            case 6: return 0;
+            default: cout << "Invalid choice! Try again.\n";
+        }
+    }
+}
